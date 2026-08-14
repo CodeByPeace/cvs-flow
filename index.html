@@ -11,13 +11,14 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<main>
 
 <div id="app">
 
   <section id="landing" class="screen active">
     <h1>Why does blood flow slow down?</h1>
     <p class="lede">Most students get this wrong, even after studying it. See it happen, then try it yourself.</p>
-    <button id="start-btn" class="btn-primary">Try it</button>
+    <button id="start-btn" class="btn-primary" aria-label="Try the interactive tool">Try it</button>
   </section>
 
   <section id="module" class="screen">
@@ -37,27 +38,27 @@
     </svg>
 
     <div class="preset-row">
-      <button id="tighten-btn" class="btn-secondary">Squeeze it tight</button>
-      <button id="loosen-btn" class="btn-secondary">Open it wide</button>
+      <button id="tighten-btn" class="btn-secondary" aria-label="Set squeeze to tight">Squeeze it tight</button>
+      <button id="loosen-btn" class="btn-secondary" aria-label="Set squeeze to loose">Open it wide</button>
     </div>
 
     <div class="slider-group">
       <div class="slider-row">
-        <label>Push from the heart</label>
-        <span id="push-out">medium</span>
+        <label for="push-slider">Push from the heart</label>
+        <span id="push-out" aria-live="polite">medium</span>
       </div>
-      <input type="range" min="10" max="90" value="50" step="1" id="push-slider">
+      <input type="range" min="10" max="90" value="50" step="1" id="push-slider" aria-label="Push from the heart, drag to change">
     </div>
 
     <div class="slider-group">
       <div class="slider-row">
-        <label>How tight the squeeze</label>
-        <span id="squeeze-out">medium</span>
+        <label for="squeeze-slider">How tight the squeeze</label>
+        <span id="squeeze-out" aria-live="polite">medium</span>
       </div>
-      <input type="range" min="4" max="30" value="15" step="1" id="squeeze-slider">
+      <input type="range" min="4" max="30" value="15" step="1" id="squeeze-slider" aria-label="How tight the squeeze, drag to change">
     </div>
 
-    <button id="to-trap-btn" class="btn-primary">Test yourself</button>
+    <button id="to-trap-btn" class="btn-primary" aria-label="Go to the test question">Test yourself</button>
   </section>
 
   <section id="trap" class="screen">
@@ -78,10 +79,11 @@
       <g id="replay-particles"></g>
     </svg>
 
-    <div id="trap-result" class="hidden"></div>
+    <div id="trap-result" class="hidden" role="status" aria-live="polite"></div>
   </section>
 
 </div>
+</main>
 
 <script src="app.js"></script>
 <script>
