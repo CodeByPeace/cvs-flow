@@ -15,8 +15,14 @@ const pressureHandle = document.getElementById('pressure-handle');
 const resistanceHandle = document.getElementById('resistance-handle');
 const dpVal = document.getElementById('dp-val');
 const rVal = document.getElementById('r-val');
-const qVal = document.getElementById('q-val');
+const flowBarFill = document.getElementById('flow-bar-fill');
 const particlesGroup = document.getElementById('particles');
+
+function wordFor(value, low, mid, high, lowMax, highMin) {
+  if (value <= lowMax) return low;
+  if (value >= highMin) return high;
+  return mid;
+}
 
 const NUM_PARTICLES = 8;
 let particles = [];
@@ -29,11 +35,15 @@ for (let i = 0; i < NUM_PARTICLES; i++) {
   particles.push({ el: c, t: i / NUM_PARTICLES });
 }
 
+const Q_MIN = 10 / 3.0;
+const Q_MAX = 90 / 0.4;
+
 function updateReadout() {
   const Q = dP / R;
-  dpVal.textContent = Math.round(dP);
-  rVal.textContent = R.toFixed(1);
-  qVal.textContent = Math.round(Q);
+  dpVal.textContent = wordFor(dP, 'light', 'medium', 'strong', 30, 70);
+  rVal.textContent = wordFor(R, 'loose', 'medium', 'tight', 0.9, 2.0);
+  const pct = Math.max(4, Math.min(100, ((Q - Q_MIN) / (Q_MAX - Q_MIN)) * 100));
+  flowBarFill.style.width = pct + '%';
   pressureHandle.setAttribute('cy', 100 - (dP - 50) * 0.6);
   const width = 15 + R * 15;
   resistanceHandle.setAttribute('width', width);
@@ -85,75 +95,86 @@ makeDraggable(resistanceHandle, (x, y) => {
   R = Math.max(0.4, Math.min(3.0, 0.4 + dist / 12));
 });
 
-const trapQuestions = [
-  {
-    text: "If resistance in this tube doubles while the pressure gradient stays exactly the same, what happens to flow?",
-    options: [
-      { label: "Flow stays the same", correct: false },
-      { label: "Flow increases", correct: false },
-      { label: "Flow drops by half", correct: true }
-    ],
-    correctMsg: "Correct. Q = ΔP / R. Double the resistance, halve the flow, even if pressure never moves. Most students fixate on upstream pressure and miss the gradient doing the actual work.",
-    wrongMsg: "Actually, flow drops by half. Q = ΔP / R: resistance doubles, flow halves, even with pressure unchanged. This is the exact mix-up most physiology students make."
-  },
-  {
-    text: "Pressure at the start of the tube increases, but resistance also increases by the same proportion. What happens to flow?",
-    options: [
-      { label: "Flow increases", correct: false },
-      { label: "Flow stays the same", correct: true },
-      { label: "Flow drops to zero", correct: false }
-    ],
-    correctMsg: "Correct. Flow depends on the ratio of pressure to resistance, not either value alone. If both scale together, Q stays fixed. This is why absolute pressure readings alone never tell the whole story.",
-    wrongMsg: "Actually, flow stays the same. Q = ΔP / R: if pressure and resistance rise by the same factor, they cancel out. This is the trap of reading pressure in isolation."
-  }
-];
+document.getElementById('tighten-btn').addEventListener('click', () => {
+  R = 3.0;
+  updateReadout();
+});
+document.getElementById('loosen-btn').addEventListener('click', () => {
+  R = 0.4;
+  updateReadout();
+});
 
-let trapIndex = 0;
+let trapAnswered = false;
 
-function renderTrap() {
-  const q = trapQuestions[trapIndex];
-  document.getElementById('trap-question').textContent = q.text;
-  const optsDiv = document.getElementById('trap-options');
-  optsDiv.innerHTML = '';
-  q.options.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'opt-btn';
-    btn.textContent = opt.label;
-    btn.dataset.correct = opt.correct;
-    btn.addEventListener('click', () => handleTrapAnswer(btn, opt.correct, q));
-    optsDiv.appendChild(btn);
+document.querySelectorAll('.opt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (trapAnswered) return;
+    trapAnswered = true;
+    document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+    const correct = btn.dataset.correct === 'true';
+    btn.classList.add(correct ? 'correct' : 'wrong');
+    if (!correct) {
+      const correctBtn = document.querySelector('.opt-btn[data-correct="true"]');
+      correctBtn.classList.add('correct');
+    }
+    playReplay(correct);
   });
-  document.getElementById('trap-result').classList.add('hidden');
-  document.getElementById('trap-result').innerHTML = '';
-}
+});
 
-function handleTrapAnswer(btn, correct, q) {
-  document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
-  btn.classList.add(correct ? 'correct' : 'wrong');
+function playReplay(wasCorrect) {
+  const replaySvg = document.getElementById('replay-svg');
+  const replayGroup = document.getElementById('replay-particles');
+  const replayResistance = document.getElementById('replay-resistance');
+  replaySvg.classList.remove('hidden');
+  replayGroup.innerHTML = '';
+
+  let rParticles = [];
+  for (let i = 0; i < 8; i++) {
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('r', 5);
+    c.setAttribute('fill', '#f2ede3');
+    c.setAttribute('cy', 100);
+    replayGroup.appendChild(c);
+    rParticles.push({ el: c, t: i / 8 });
+  }
+
+  let squeeze = 0.4;
+  let frame = 0;
+  const totalFrames = 90;
+
+  function step() {
+    frame++;
+    if (frame < totalFrames) {
+      squeeze = 0.4 + (3.0 - 0.4) * (frame / totalFrames);
+    } else {
+      squeeze = 3.0;
+    }
+    const width = 15 + squeeze * 15;
+    replayResistance.setAttribute('width', width);
+    replayResistance.setAttribute('x', 200 - width / 2);
+    replayResistance.setAttribute('height', 20 + squeeze * 20);
+    replayResistance.setAttribute('y', 100 - (20 + squeeze * 20) / 2);
+
+    const Q = 50 / squeeze;
+    const speed = Math.max(0.15, Q / 300);
+    rParticles.forEach(p => {
+      p.t += speed * 0.01;
+      if (p.t > 1) p.t -= 1;
+      const x = 60 + p.t * (340 - 60);
+      p.el.setAttribute('cx', x);
+    });
+
+    if (frame < 240) {
+      requestAnimationFrame(step);
+    }
+  }
+  step();
+
   const result = document.getElementById('trap-result');
   result.classList.remove('hidden');
-  if (correct) {
-    result.textContent = q.correctMsg;
+  if (wasCorrect) {
+    result.textContent = 'Right. Watch the dots slow down as the tube tightens, even though the push never changed. Squeeze the tube more, and less gets through, every time.';
   } else {
-    const correctBtn = document.querySelector('.opt-btn[data-correct="true"]');
-    correctBtn.classList.add('correct');
-    result.textContent = q.wrongMsg;
+    result.textContent = 'Watch what actually happens: the dots slow down as the tube tightens, even with the push staying the same. This is the exact mix-up most students make, focusing on the push and missing the squeeze.';
   }
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'btn-primary';
-  nextBtn.textContent = trapIndex < trapQuestions.length - 1 ? 'Next question' : 'Back to tube';
-  nextBtn.style.marginTop = '16px';
-  nextBtn.addEventListener('click', () => {
-    if (trapIndex < trapQuestions.length - 1) {
-      trapIndex++;
-      renderTrap();
-    } else {
-      trapIndex = 0;
-      showScreen('module');
-    }
-  });
-  result.appendChild(document.createElement('br'));
-  result.appendChild(nextBtn);
 }
-
-renderTrap();

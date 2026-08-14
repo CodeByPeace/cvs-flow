@@ -14,14 +14,14 @@
 <div id="app">
 
   <section id="landing" class="screen active">
-    <h1>The Flow Problem</h1>
-    <p class="lede">Between 95% and 99% of physiology students get this question wrong. Not because they didn't study. Because it's genuinely counterintuitive.</p>
-    <button id="start-btn" class="btn-primary">See why</button>
+    <h1>Why does blood flow slow down?</h1>
+    <p class="lede">Most students get this wrong, even after studying it. Try it yourself and see why.</p>
+    <button id="start-btn" class="btn-primary">Try it</button>
   </section>
 
   <section id="module" class="screen">
-    <h2>Pressure, Resistance, Flow</h2>
-    <p class="hint">Drag the two handles below. Watch the flow.</p>
+    <h2>Push, Squeeze, Flow</h2>
+    <p class="hint">Drag the green circle to change the push. Drag the orange block to squeeze the tube.</p>
 
     <svg id="tube-svg" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
       <path id="tube-path" d="M 40 100 L 360 100" stroke="#3a352c" stroke-width="40" stroke-linecap="round" fill="none"/>
@@ -30,23 +30,41 @@
       <rect id="resistance-handle" x="185" y="70" width="30" height="60" rx="6"/>
     </svg>
 
+    <div class="preset-row">
+      <button id="tighten-btn" class="btn-secondary">Make it tighter</button>
+      <button id="loosen-btn" class="btn-secondary">Make it looser</button>
+    </div>
+
+    <div class="flow-bar-wrap">
+      <span class="flow-bar-label">Flow</span>
+      <div class="flow-bar-track">
+        <div id="flow-bar-fill"></div>
+      </div>
+    </div>
+
     <div class="readout">
-      <span>ΔP: <b id="dp-val">50</b></span>
-      <span>R: <b id="r-val">1.0</b></span>
-      <span>Q: <b id="q-val">50</b></span>
+      <span>Push: <b id="dp-val">medium</b></span>
+      <span>Squeeze: <b id="r-val">medium</b></span>
     </div>
 
     <button id="to-trap-btn" class="btn-primary">Test yourself</button>
   </section>
 
   <section id="trap" class="screen">
-    <h2>Predict first</h2>
-    <p id="trap-question">If resistance in this tube <b>doubles</b> while the pressure gradient stays exactly the same, what happens to flow?</p>
+    <h2>Guess before you look</h2>
+    <p id="trap-question">The tube gets squeezed tighter, but the push stays exactly the same. What happens to the flow?</p>
     <div id="trap-options">
       <button class="opt-btn" data-correct="false">Flow stays the same</button>
-      <button class="opt-btn" data-correct="false">Flow increases</button>
-      <button class="opt-btn" data-correct="true">Flow drops by half</button>
+      <button class="opt-btn" data-correct="false">Flow gets faster</button>
+      <button class="opt-btn" data-correct="true">Flow gets slower</button>
     </div>
+
+    <svg id="replay-svg" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" class="hidden">
+      <path d="M 40 100 L 360 100" stroke="#3a352c" stroke-width="40" stroke-linecap="round" fill="none"/>
+      <g id="replay-particles"></g>
+      <rect id="replay-resistance" x="185" y="70" width="30" height="60" rx="6" fill="#a86a2e"/>
+    </svg>
+
     <div id="trap-result" class="hidden"></div>
   </section>
 
