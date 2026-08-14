@@ -6,7 +6,8 @@
 <title>CVS Flow</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1a1815">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,36 +16,45 @@
 
   <section id="landing" class="screen active">
     <h1>Why does blood flow slow down?</h1>
-    <p class="lede">Most students get this wrong, even after studying it. Try it yourself and see why.</p>
+    <p class="lede">Most students get this wrong, even after studying it. See it happen, then try it yourself.</p>
     <button id="start-btn" class="btn-primary">Try it</button>
   </section>
 
   <section id="module" class="screen">
-    <h2>Push, Squeeze, Flow</h2>
-    <p class="hint">Drag the green circle to change the push. Drag the orange block to squeeze the tube.</p>
+    <h2>Push, squeeze, flow</h2>
+    <p class="hint">Drag the sliders. Watch the vessel and the blood cells.</p>
 
-    <svg id="tube-svg" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
-      <path id="tube-path" d="M 40 100 L 360 100" stroke="#3a352c" stroke-width="40" stroke-linecap="round" fill="none"/>
+    <svg id="vessel-svg" viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg" role="img">
+      <title>Blood vessel cross section</title>
+      <desc>A vessel that narrows in the middle, with blood cells flowing through</desc>
+      <rect x="30" y="60" width="34" height="60" rx="10" fill="#993C1D"/>
+      <text x="47" y="135" text-anchor="middle" fill="#8a8272" font-size="12">Heart</text>
+      <path id="vessel-top" d="" stroke="#712B13" stroke-width="3" fill="none"/>
+      <path id="vessel-bottom" d="" stroke="#712B13" stroke-width="3" fill="none"/>
+      <path id="vessel-fill" d="" fill="#D85A30" fill-opacity="0.12"/>
       <g id="particles"></g>
-      <circle id="pressure-handle" cx="40" cy="100" r="18"/>
-      <rect id="resistance-handle" x="185" y="70" width="30" height="60" rx="6"/>
+      <text x="190" y="30" text-anchor="middle" fill="#f2ede3" font-size="14" font-weight="500" id="flow-word">medium flow</text>
     </svg>
 
     <div class="preset-row">
-      <button id="tighten-btn" class="btn-secondary">Make it tighter</button>
-      <button id="loosen-btn" class="btn-secondary">Make it looser</button>
+      <button id="tighten-btn" class="btn-secondary">Squeeze it tight</button>
+      <button id="loosen-btn" class="btn-secondary">Open it wide</button>
     </div>
 
-    <div class="flow-bar-wrap">
-      <span class="flow-bar-label">Flow</span>
-      <div class="flow-bar-track">
-        <div id="flow-bar-fill"></div>
+    <div class="slider-group">
+      <div class="slider-row">
+        <label>Push from the heart</label>
+        <span id="push-out">medium</span>
       </div>
+      <input type="range" min="10" max="90" value="50" step="1" id="push-slider">
     </div>
 
-    <div class="readout">
-      <span>Push: <b id="dp-val">medium</b></span>
-      <span>Squeeze: <b id="r-val">medium</b></span>
+    <div class="slider-group">
+      <div class="slider-row">
+        <label>How tight the squeeze</label>
+        <span id="squeeze-out">medium</span>
+      </div>
+      <input type="range" min="4" max="30" value="15" step="1" id="squeeze-slider">
     </div>
 
     <button id="to-trap-btn" class="btn-primary">Test yourself</button>
@@ -52,17 +62,20 @@
 
   <section id="trap" class="screen">
     <h2>Guess before you look</h2>
-    <p id="trap-question">The tube gets squeezed tighter, but the push stays exactly the same. What happens to the flow?</p>
+    <p id="trap-question">The vessel gets squeezed tighter, but the push from the heart stays exactly the same. What happens to the flow?</p>
     <div id="trap-options">
       <button class="opt-btn" data-correct="false">Flow stays the same</button>
       <button class="opt-btn" data-correct="false">Flow gets faster</button>
       <button class="opt-btn" data-correct="true">Flow gets slower</button>
     </div>
 
-    <svg id="replay-svg" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" class="hidden">
-      <path d="M 40 100 L 360 100" stroke="#3a352c" stroke-width="40" stroke-linecap="round" fill="none"/>
+    <svg id="replay-svg" viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg" class="hidden" role="img">
+      <title>Replay animation</title>
+      <desc>The vessel narrowing while blood cells slow down</desc>
+      <path id="replay-top" d="" stroke="#712B13" stroke-width="3" fill="none"/>
+      <path id="replay-bottom" d="" stroke="#712B13" stroke-width="3" fill="none"/>
+      <path id="replay-fill" d="" fill="#D85A30" fill-opacity="0.12"/>
       <g id="replay-particles"></g>
-      <rect id="replay-resistance" x="185" y="70" width="30" height="60" rx="6" fill="#a86a2e"/>
     </svg>
 
     <div id="trap-result" class="hidden"></div>
