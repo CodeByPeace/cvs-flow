@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CVS Flow</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1815">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <section id="landing" class="screen active">
+    <h1>The Flow Problem</h1>
+    <p class="lede">Between 95% and 99% of physiology students get this question wrong. Not because they didn't study. Because it's genuinely counterintuitive.</p>
+    <button id="start-btn" class="btn-primary">See why</button>
+  </section>
+
+  <section id="module" class="screen">
+    <h2>Pressure, Resistance, Flow</h2>
+    <p class="hint">Drag the two handles below. Watch the flow.</p>
+
+    <svg id="tube-svg" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+      <path id="tube-path" d="M 40 100 L 360 100" stroke="#3a352c" stroke-width="40" stroke-linecap="round" fill="none"/>
+      <g id="particles"></g>
+      <circle id="pressure-handle" cx="40" cy="100" r="18"/>
+      <rect id="resistance-handle" x="185" y="70" width="30" height="60" rx="6"/>
+    </svg>
+
+    <div class="readout">
+      <span>ΔP: <b id="dp-val">50</b></span>
+      <span>R: <b id="r-val">1.0</b></span>
+      <span>Q: <b id="q-val">50</b></span>
+    </div>
+
+    <button id="to-trap-btn" class="btn-primary">Test yourself</button>
+  </section>
+
+  <section id="trap" class="screen">
+    <h2>Predict first</h2>
+    <p id="trap-question">If resistance in this tube <b>doubles</b> while the pressure gradient stays exactly the same, what happens to flow?</p>
+    <div id="trap-options">
+      <button class="opt-btn" data-correct="false">Flow stays the same</button>
+      <button class="opt-btn" data-correct="false">Flow increases</button>
+      <button class="opt-btn" data-correct="true">Flow drops by half</button>
+    </div>
+    <div id="trap-result" class="hidden"></div>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js');
+  });
+}
+</script>
+</body>
+</html>
