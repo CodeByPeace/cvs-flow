@@ -1,6 +1,8 @@
-const CACHE_VERSION = 'v1786694855';
+const CACHE_VERSION = 'v1786695385';
 const CACHE_NAME = 'cvs-flow-' + CACHE_VERSION;
 const ASSETS = [
+  './favicon-32.png',
+  './apple-touch-icon.png',
   './',
   './index.html',
   './style.css',

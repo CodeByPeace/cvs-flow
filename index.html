@@ -15,13 +15,38 @@
 
 <div id="app">
 
-  <section id="landing" class="screen active">
-    <h1>Why does blood flow slow down?</h1>
-    <p class="lede">Most students get this wrong, even after studying it. See it happen, then try it yourself.</p>
-    <button id="start-btn" class="btn-primary" aria-label="Try the interactive tool">Try it</button>
+  <section id="home" class="screen active">
+    <h1>CVS Flow</h1>
+    <p class="lede">Interactive tools for the physiology ideas most students get wrong, even after studying them.</p>
+
+    <div class="module-card" id="card-flow">
+      <div class="module-card-top">
+        <h2>Push, squeeze, flow</h2>
+        <span class="badge" id="badge-flow">Not started</span>
+      </div>
+      <p class="module-desc">Why does blood flow crash when a vessel narrows, even if the heart pushes just as hard?</p>
+      <button class="btn-primary" data-open="flow">Open</button>
+    </div>
+
+    <div class="module-card" id="card-loop">
+      <div class="module-card-top">
+        <h2>Two loops, not one</h2>
+        <span class="badge" id="badge-loop">Not started</span>
+      </div>
+      <p class="module-desc">Most students think blood flows in a single loop. It actually flows through two separate circuits.</p>
+      <button class="btn-primary" data-open="loop">Open</button>
+    </div>
   </section>
 
-  <section id="module" class="screen">
+  <section id="flow-landing" class="screen">
+    <button class="btn-back" data-back="home">Back</button>
+    <h1>Why does blood flow slow down?</h1>
+    <p class="lede">Most students get this wrong, even after studying it. See it happen, then try it yourself.</p>
+    <button id="flow-start-btn" class="btn-primary" aria-label="Try the interactive tool">Try it</button>
+  </section>
+
+  <section id="flow-module" class="screen">
+    <button class="btn-back" data-back="home">Back</button>
     <h2>Push, squeeze, flow</h2>
     <p class="hint">Drag the sliders. Watch the vessel and the blood cells.</p>
 
@@ -61,7 +86,8 @@
     <button id="to-trap-btn" class="btn-primary" aria-label="Go to the test question">Test yourself</button>
   </section>
 
-  <section id="trap" class="screen">
+  <section id="flow-trap" class="screen">
+    <button class="btn-back" data-back="home">Back</button>
     <h2>Guess before you look</h2>
     <p id="trap-question">The vessel gets squeezed tighter, but the push from the heart stays exactly the same. What happens to the flow?</p>
     <div id="trap-options">
@@ -80,11 +106,60 @@
     </svg>
 
     <div id="trap-result" class="hidden" role="status" aria-live="polite"></div>
+    <button id="flow-done-btn" class="btn-primary hidden">Back to modules</button>
+  </section>
+
+  <section id="loop-landing" class="screen">
+    <button class="btn-back" data-back="home">Back</button>
+    <h1>Is blood flow one loop or two?</h1>
+    <p class="lede">Most students picture blood moving in a single circle. See what actually happens.</p>
+    <button id="loop-start-btn" class="btn-primary">Try it</button>
+  </section>
+
+  <section id="loop-module" class="screen">
+    <button class="btn-back" data-back="home">Back</button>
+    <h2>Two separate circuits</h2>
+    <p class="hint">Tap play. Watch where the blue path goes, and where the red path goes.</p>
+
+    <svg id="loop-svg" viewBox="0 0 380 260" xmlns="http://www.w3.org/2000/svg" role="img">
+      <title>Pulmonary and systemic circulation</title>
+      <desc>Two separate loops, one to the lungs and one to the body, both connected through the heart</desc>
+      <rect x="150" y="90" width="80" height="70" rx="14" fill="#712B13"/>
+      <text x="190" y="130" text-anchor="middle" fill="#f2ede3" font-size="13" font-weight="500">Heart</text>
+
+      <rect x="130" y="20" width="120" height="45" rx="10" fill="#185FA5" fill-opacity="0.18" stroke="#378ADD" stroke-width="1"/>
+      <text x="190" y="47" text-anchor="middle" fill="#85B7EB" font-size="12">Lungs</text>
+
+      <rect x="90" y="195" width="200" height="45" rx="10" fill="#A32D2D" fill-opacity="0.15" stroke="#E24B4A" stroke-width="1"/>
+      <text x="190" y="222" text-anchor="middle" fill="#F09595" font-size="12">Rest of the body</text>
+
+      <path id="loop-pulmonary" d="M 175 90 C 175 78 175 65 175 65 L 175 65 C 175 55 178 65 190 65 C 202 65 205 55 205 65 L 205 65 C 205 78 205 90 205 90" stroke="#378ADD" stroke-width="3" fill="none"/>
+      <path id="loop-systemic" d="M 175 160 C 175 178 175 195 175 195 M 205 195 C 205 178 205 160 205 160" stroke="#E24B4A" stroke-width="3" fill="none"/>
+
+      <g id="loop-particles"></g>
+    </svg>
+
+    <button id="loop-play-btn" class="btn-secondary">Play the flow</button>
+
+    <button id="to-loop-trap-btn" class="btn-primary">Test yourself</button>
+  </section>
+
+  <section id="loop-trap" class="screen">
+    <button class="btn-back" data-back="home">Back</button>
+    <h2>Guess before you look</h2>
+    <p>Blood leaving the heart toward the lungs. Where does it go right after the lungs?</p>
+    <div id="loop-trap-options">
+      <button class="opt-btn" data-correct="false">Straight to the rest of the body</button>
+      <button class="opt-btn" data-correct="true">Back to the heart first</button>
+      <button class="opt-btn" data-correct="false">It stays in the lungs</button>
+    </div>
+    <div id="loop-trap-result" class="hidden" role="status" aria-live="polite"></div>
+    <button id="loop-done-btn" class="btn-primary hidden">Back to modules</button>
   </section>
 
 </div>
-</main>
 
+</main>
 <script src="app.js"></script>
 <script>
 if ('serviceWorker' in navigator) {

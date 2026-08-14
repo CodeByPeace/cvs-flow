@@ -2,17 +2,51 @@ const screens = document.querySelectorAll('.screen');
 function showScreen(id) {
   screens.forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
 }
 
-document.getElementById('start-btn').addEventListener('click', () => showScreen('module'));
-document.getElementById('to-trap-btn').addEventListener('click', () => showScreen('trap'));
+document.querySelectorAll('[data-back]').forEach(btn => {
+  btn.addEventListener('click', () => showScreen(btn.dataset.back));
+});
+
+document.querySelectorAll('[data-open]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.open;
+    showScreen(target + '-landing');
+  });
+});
+
+const PROGRESS_KEY = 'cvs-flow-progress';
+function getProgress() {
+  try {
+    return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+function setDone(moduleId) {
+  const p = getProgress();
+  p[moduleId] = true;
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch (e) {}
+  renderBadges();
+}
+function renderBadges() {
+  const p = getProgress();
+  const flowBadge = document.getElementById('badge-flow');
+  const loopBadge = document.getElementById('badge-loop');
+  if (p.flow) { flowBadge.textContent = 'Completed'; flowBadge.classList.add('done'); }
+  if (p.loop) { loopBadge.textContent = 'Completed'; loopBadge.classList.add('done'); }
+}
+renderBadges();
+
+document.getElementById('flow-start-btn').addEventListener('click', () => showScreen('flow-module'));
+document.getElementById('to-trap-btn').addEventListener('click', () => showScreen('flow-trap'));
 
 const VESSEL_LEFT = 70;
 const VESSEL_RIGHT = 350;
 const VESSEL_CENTER = (VESSEL_LEFT + VESSEL_RIGHT) / 2;
 const NARROW_SPAN = 45;
 const BASE_HALF = 28;
-const MIN_HALF = 5;
 
 function halfGapAt(x, gap) {
   const dist = Math.abs(x - VESSEL_CENTER);
@@ -40,10 +74,6 @@ function buildVesselPaths(gap) {
   return { top, bottom, fill };
 }
 
-// Real Poiseuille relationship: resistance scales as 1 / radius^4.
-// gap slider ranges 4 (tight) to 30 (loose), representing the narrowed radius.
-// A radius-based resistance means flow crashes fast as the vessel tightens,
-// matching the real physiology instead of a flat linear approximation.
 function flowFor(push, gap) {
   const radius = gap / 2;
   const resistance = 1 / Math.pow(radius, 4);
@@ -69,7 +99,7 @@ function makeParticles(group, n, color) {
   return arr;
 }
 
-(function mainModule() {
+(function flowModule() {
   const pushSlider = document.getElementById('push-slider');
   const squeezeSlider = document.getElementById('squeeze-slider');
   const pushOut = document.getElementById('push-out');
@@ -133,23 +163,27 @@ function makeParticles(group, n, color) {
   animate();
 })();
 
-let trapAnswered = false;
+let flowTrapAnswered = false;
 
-document.querySelectorAll('.opt-btn').forEach(btn => {
+document.querySelectorAll('#trap-options .opt-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    if (trapAnswered) return;
-    trapAnswered = true;
-    document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+    if (flowTrapAnswered) return;
+    flowTrapAnswered = true;
+    document.querySelectorAll('#trap-options .opt-btn').forEach(b => b.disabled = true);
     const correct = btn.dataset.correct === 'true';
     btn.classList.add(correct ? 'correct' : 'wrong');
     if (!correct) {
-      document.querySelector('.opt-btn[data-correct="true"]').classList.add('correct');
+      document.querySelector('#trap-options .opt-btn[data-correct="true"]').classList.add('correct');
     }
-    playReplay(correct);
+    playFlowReplay();
+    setDone('flow');
+    document.getElementById('flow-done-btn').classList.remove('hidden');
   });
 });
 
-function playReplay(wasCorrect) {
+document.getElementById('flow-done-btn').addEventListener('click', () => showScreen('home'));
+
+function playFlowReplay() {
   const replaySvg = document.getElementById('replay-svg');
   const replayTop = document.getElementById('replay-top');
   const replayBottom = document.getElementById('replay-bottom');
@@ -160,19 +194,17 @@ function playReplay(wasCorrect) {
 
   const particles = makeParticles(replayGroup, 10, '#E24B4A');
   let frame = 0;
-  const totalFrames = 100;
 
   function step() {
     frame++;
-    const t = Math.min(1, frame / totalFrames);
+    const t = Math.min(1, frame / 100);
     const gap = 30 - (30 - 6) * t;
     const paths = buildVesselPaths(gap);
     replayTop.setAttribute('d', paths.top);
     replayBottom.setAttribute('d', paths.bottom);
     replayFill.setAttribute('d', paths.fill);
 
-    const push = 50;
-    const Q = flowFor(push, gap);
+    const Q = flowFor(50, gap);
     const speed = Math.max(0.02, Math.min(1.4, Q / 3));
     particles.forEach(p => {
       p.t += speed * 0.006;
@@ -184,17 +216,91 @@ function playReplay(wasCorrect) {
       p.el.setAttribute('r', Math.max(2.5, Math.min(5, h / 6)));
     });
 
-    if (frame < 260) {
-      requestAnimationFrame(step);
-    }
+    if (frame < 260) requestAnimationFrame(step);
   }
   step();
 
-  const result = document.getElementById('trap-result');
-  result.classList.remove('hidden');
-  if (wasCorrect) {
-    result.textContent = 'Right. Watch how fast the flow drops as the vessel narrows, even though the push from the heart never changed. Blood flow depends on the radius raised to the fourth power, so even a small squeeze causes a huge drop, not a small one.';
-  } else {
-    result.textContent = 'Watch what actually happens: the flow crashes fast as the vessel narrows, even with the push staying the same. In real vessels, resistance depends on radius to the fourth power, so a modest squeeze causes a massive drop in flow, this is the exact mix-up most students make.';
-  }
+  document.getElementById('trap-result').classList.remove('hidden');
+  document.getElementById('trap-result').textContent = 'Watch how fast the flow drops as the vessel narrows, even though the push from the heart never changed. Blood flow depends on the radius raised to the fourth power, so even a small squeeze causes a huge drop, not a small one.';
 }
+
+document.getElementById('loop-start-btn').addEventListener('click', () => showScreen('loop-module'));
+document.getElementById('to-loop-trap-btn').addEventListener('click', () => showScreen('loop-trap'));
+
+(function loopModule() {
+  const group = document.getElementById('loop-particles');
+  const playBtn = document.getElementById('loop-play-btn');
+  let playing = false;
+  let particles = [];
+
+  function makeLoopParticle(color) {
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('r', 5);
+    c.setAttribute('fill', color);
+    group.appendChild(c);
+    return c;
+  }
+
+  const heartCenter = { x: 190, y: 125 };
+  const lungCenter = { x: 190, y: 42 };
+  const bodyCenter = { x: 190, y: 217 };
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  playBtn.addEventListener('click', () => {
+    if (playing) return;
+    playing = true;
+    group.innerHTML = '';
+    const blue = makeLoopParticle('#378ADD');
+    const red = makeLoopParticle('#E24B4A');
+    let t = 0;
+
+    function step() {
+      t += 0.012;
+      const cycle = t % 2;
+
+      if (cycle < 1) {
+        const localT = cycle;
+        blue.setAttribute('cx', lerp(heartCenter.x, lungCenter.x, localT));
+        blue.setAttribute('cy', lerp(heartCenter.y - 20, lungCenter.y + 20, localT));
+        red.setAttribute('cx', lerp(heartCenter.x, bodyCenter.x, 0));
+        red.setAttribute('cy', lerp(heartCenter.y + 20, bodyCenter.y - 20, 0));
+      } else {
+        const localT = cycle - 1;
+        blue.setAttribute('cx', lerp(lungCenter.x, heartCenter.x, localT));
+        blue.setAttribute('cy', lerp(lungCenter.y + 20, heartCenter.y - 20, localT));
+        red.setAttribute('cx', lerp(heartCenter.x, bodyCenter.x, localT));
+        red.setAttribute('cy', lerp(heartCenter.y + 20, bodyCenter.y - 20, localT));
+      }
+
+      if (t < 6) {
+        requestAnimationFrame(step);
+      } else {
+        playing = false;
+      }
+    }
+    step();
+  });
+})();
+
+let loopTrapAnswered = false;
+
+document.querySelectorAll('#loop-trap-options .opt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (loopTrapAnswered) return;
+    loopTrapAnswered = true;
+    document.querySelectorAll('#loop-trap-options .opt-btn').forEach(b => b.disabled = true);
+    const correct = btn.dataset.correct === 'true';
+    btn.classList.add(correct ? 'correct' : 'wrong');
+    if (!correct) {
+      document.querySelector('#loop-trap-options .opt-btn[data-correct="true"]').classList.add('correct');
+    }
+    const result = document.getElementById('loop-trap-result');
+    result.classList.remove('hidden');
+    result.textContent = 'Blood always returns to the heart between circuits. It never travels lungs to body directly. The heart is the hub for both loops, the pulmonary circuit (heart to lungs to heart) and the systemic circuit (heart to body to heart), not a single continuous path.';
+    setDone('loop');
+    document.getElementById('loop-done-btn').classList.remove('hidden');
+  });
+});
+
+document.getElementById('loop-done-btn').addEventListener('click', () => showScreen('home'));
